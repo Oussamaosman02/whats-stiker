@@ -11,14 +11,16 @@ export default function RootLayout() {
           headerStyle: {
             backgroundColor: colors.background,
           },
-          headerTintColor: colors.text,
+          headerTintColor: colors.primary,
           headerTitleStyle: {
             fontWeight: '700',
+            color: colors.text,
           },
+          headerShadowVisible: false,
           contentStyle: {
             backgroundColor: colors.background,
           },
-          animation: 'slide_from_right',
+          animation: 'fade_from_bottom',
         }}
       />
     </>

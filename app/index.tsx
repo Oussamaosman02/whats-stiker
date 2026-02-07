@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { PackCard } from '../src/components/PackCard';
 import { useStickerPacks, useApiToken } from '../src/store/useStore';
 import { deleteStickerPack } from '../src/services/stickerService';
-import { colors, spacing, fontSize, borderRadius } from '../src/theme';
+import { colors, spacing, fontSize, borderRadius, glassCard } from '../src/theme';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -48,10 +48,14 @@ export default function HomeScreen() {
     <>
       <Stack.Screen
         options={{
-          title: 'StickerAI',
+          title: '',
           headerRight: () => (
-            <Pressable onPress={() => router.push('/settings')} hitSlop={8}>
-              <Ionicons name="settings-outline" size={24} color={colors.text} />
+            <Pressable
+              onPress={() => router.push('/settings')}
+              hitSlop={8}
+              style={styles.headerBtn}
+            >
+              <Ionicons name="cog-outline" size={22} color={colors.textSecondary} />
             </Pressable>
           ),
         }}
@@ -63,9 +67,14 @@ export default function HomeScreen() {
           <RefreshControl refreshing={loading} onRefresh={refresh} tintColor={colors.primary} />
         }
       >
-        {/* Hero section */}
+        {/* Ambient glow orbs */}
+        <View style={styles.glowOrb1} />
+        <View style={styles.glowOrb2} />
+
+        {/* Hero */}
         <View style={styles.hero}>
-          <Text style={styles.heroTitle}>Crea Stickers con IA</Text>
+          <Text style={styles.heroLabel}>STICKER AI</Text>
+          <Text style={styles.heroTitle}>Crea Stickers{'\n'}con IA</Text>
           <Text style={styles.heroSubtitle}>
             Genera stickers únicos para WhatsApp usando inteligencia artificial
           </Text>
@@ -74,33 +83,37 @@ export default function HomeScreen() {
         {/* Token warning */}
         {!hasToken && (
           <Pressable style={styles.tokenWarning} onPress={() => router.push('/settings')}>
-            <Ionicons name="key-outline" size={20} color={colors.accent} />
+            <View style={styles.tokenIconWrap}>
+              <Ionicons name="key" size={16} color={colors.accent} />
+            </View>
             <Text style={styles.tokenWarningText}>
               Configura tu API token de Replicate para empezar
             </Text>
-            <Ionicons name="chevron-forward" size={16} color={colors.accent} />
+            <Ionicons name="arrow-forward" size={14} color={colors.accent} />
           </Pressable>
         )}
 
         {/* Actions */}
         <View style={styles.actions}>
           <Pressable
-            style={styles.actionButton}
+            style={[styles.actionButton, styles.actionCyan]}
             onPress={() => router.push('/create-pack')}
           >
-            <View style={[styles.actionIcon, { backgroundColor: colors.primary + '20' }]}>
-              <Ionicons name="add-circle" size={28} color={colors.primary} />
+            <View style={styles.actionGlow} />
+            <View style={[styles.actionIcon, { backgroundColor: colors.primaryMuted }]}>
+              <Ionicons name="add" size={24} color={colors.primary} />
             </View>
             <Text style={styles.actionTitle}>Nuevo Pack</Text>
             <Text style={styles.actionDesc}>Crea un pack de stickers</Text>
           </Pressable>
 
           <Pressable
-            style={styles.actionButton}
+            style={[styles.actionButton, styles.actionPurple]}
             onPress={() => router.push('/generate')}
           >
-            <View style={[styles.actionIcon, { backgroundColor: colors.secondary + '20' }]}>
-              <Ionicons name="sparkles" size={28} color={colors.secondary} />
+            <View style={[styles.actionGlow, { backgroundColor: colors.neonPurple }]} />
+            <View style={[styles.actionIcon, { backgroundColor: colors.secondaryMuted }]}>
+              <Ionicons name="sparkles" size={24} color={colors.secondary} />
             </View>
             <Text style={styles.actionTitle}>Generar</Text>
             <Text style={styles.actionDesc}>Crear sticker con IA</Text>
@@ -109,14 +122,20 @@ export default function HomeScreen() {
 
         {/* Packs list */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Mis Packs de Stickers</Text>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionDot} />
+            <Text style={styles.sectionTitle}>Mis Packs</Text>
+          </View>
+
           {packs.length === 0 && !loading ? (
             <View style={styles.emptyState}>
-              <Ionicons name="images-outline" size={64} color={colors.textMuted} />
-              <Text style={styles.emptyTitle}>No tienes packs todavía</Text>
-              <Text style={styles.emptyDesc}>
-                Crea tu primer pack de stickers y genera imágenes con IA
-              </Text>
+              <View style={styles.emptyGlass}>
+                <Ionicons name="cube-outline" size={48} color={colors.textMuted} />
+                <Text style={styles.emptyTitle}>No tienes packs todavía</Text>
+                <Text style={styles.emptyDesc}>
+                  Crea tu primer pack de stickers y genera imágenes con IA
+                </Text>
+              </View>
             </View>
           ) : (
             packs.map(pack => (
@@ -141,32 +160,79 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.md,
-    paddingBottom: spacing.xxl,
+    paddingBottom: spacing.xxl * 2,
+  },
+  glowOrb1: {
+    position: 'absolute',
+    top: -60,
+    right: -40,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: colors.neonCyan,
+    opacity: 0.04,
+  },
+  glowOrb2: {
+    position: 'absolute',
+    top: 120,
+    left: -80,
+    width: 250,
+    height: 250,
+    borderRadius: 125,
+    backgroundColor: colors.neonPurple,
+    opacity: 0.03,
+  },
+  headerBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.glass,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   hero: {
-    paddingVertical: spacing.xl,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xl,
+  },
+  heroLabel: {
+    fontSize: fontSize.xs,
+    fontWeight: '700',
+    color: colors.primary,
+    letterSpacing: 4,
+    marginBottom: spacing.sm,
   },
   heroTitle: {
     fontSize: fontSize.hero,
     fontWeight: '800',
     color: colors.text,
+    lineHeight: 44,
     marginBottom: spacing.sm,
   },
   heroSubtitle: {
     fontSize: fontSize.md,
-    color: colors.textSecondary,
-    lineHeight: 24,
+    color: colors.textMuted,
+    lineHeight: 22,
   },
   tokenWarning: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.accent + '15',
+    backgroundColor: colors.accentMuted,
     borderRadius: borderRadius.md,
     padding: spacing.md,
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
     borderWidth: 1,
-    borderColor: colors.accent + '30',
+    borderColor: 'rgba(255, 184, 0, 0.15)',
     gap: spacing.sm,
+  },
+  tokenIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 184, 0, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   tokenWarningText: {
     flex: 1,
@@ -175,21 +241,34 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: 'row',
-    gap: spacing.md,
+    gap: spacing.sm,
     marginBottom: spacing.xl,
   },
   actionButton: {
     flex: 1,
-    backgroundColor: colors.card,
-    borderRadius: borderRadius.lg,
+    ...glassCard,
     padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
+    overflow: 'hidden',
+  },
+  actionCyan: {
+    borderColor: colors.borderCyan,
+  },
+  actionPurple: {
+    borderColor: colors.borderPurple,
+  },
+  actionGlow: {
+    position: 'absolute',
+    top: 0,
+    left: spacing.lg,
+    right: spacing.lg,
+    height: 1,
+    backgroundColor: colors.neonCyan,
+    opacity: 0.5,
   },
   actionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: borderRadius.md,
+    width: 44,
+    height: 44,
+    borderRadius: borderRadius.sm,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.sm,
@@ -198,24 +277,41 @@ const styles = StyleSheet.create({
     fontSize: fontSize.md,
     fontWeight: '700',
     color: colors.text,
+    letterSpacing: 0.3,
   },
   actionDesc: {
     fontSize: fontSize.xs,
     color: colors.textMuted,
-    marginTop: 4,
+    marginTop: 3,
   },
   section: {
     marginBottom: spacing.lg,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  sectionDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.primary,
   },
   sectionTitle: {
     fontSize: fontSize.xl,
     fontWeight: '700',
     color: colors.text,
-    marginBottom: spacing.md,
+    letterSpacing: 0.5,
   },
   emptyState: {
+    paddingVertical: spacing.lg,
+  },
+  emptyGlass: {
+    ...glassCard,
     alignItems: 'center',
-    paddingVertical: spacing.xxl,
+    padding: spacing.xl,
   },
   emptyTitle: {
     fontSize: fontSize.lg,
@@ -229,5 +325,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: spacing.sm,
     maxWidth: 260,
+    lineHeight: 20,
   },
 });

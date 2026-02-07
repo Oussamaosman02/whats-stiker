@@ -17,14 +17,17 @@ export function StickerCard({ sticker, onPress, onDelete, size = 100 }: StickerC
       onPress={onPress}
       style={[styles.container, { width: size, height: size }]}
     >
+      <View style={[styles.glowRing, { width: size - 2, height: size - 2 }]} />
       <Image
         source={{ uri: sticker.uri }}
-        style={[styles.image, { width: size - 8, height: size - 8 }]}
+        style={[styles.image, { width: size - 12, height: size - 12 }]}
         resizeMode="contain"
       />
       {onDelete && (
         <Pressable style={styles.deleteButton} onPress={onDelete}>
-          <Ionicons name="close-circle" size={22} color={colors.danger} />
+          <View style={styles.deleteInner}>
+            <Ionicons name="close" size={14} color={colors.text} />
+          </View>
         </Pressable>
       )}
     </Pressable>
@@ -33,22 +36,38 @@ export function StickerCard({ sticker, onPress, onDelete, size = 100 }: StickerC
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.glass,
     borderRadius: borderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
     margin: spacing.xs,
     borderWidth: 1,
     borderColor: colors.border,
+    overflow: 'hidden',
+  },
+  glowRing: {
+    position: 'absolute',
+    borderRadius: borderRadius.md - 1,
+    borderWidth: 1,
+    borderColor: colors.borderCyan,
+    opacity: 0.3,
   },
   image: {
     borderRadius: borderRadius.sm,
   },
   deleteButton: {
     position: 'absolute',
-    top: -6,
-    right: -6,
-    backgroundColor: colors.background,
-    borderRadius: borderRadius.full,
+    top: 4,
+    right: 4,
+  },
+  deleteInner: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.danger,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
 });

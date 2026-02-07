@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
-import { colors, borderRadius, spacing, fontSize } from '../theme';
+import { colors, borderRadius, spacing, fontSize, glassCardStrong } from '../theme';
 
 interface GeneratingOverlayProps {
   visible: boolean;
@@ -10,14 +10,15 @@ interface GeneratingOverlayProps {
 
 export function GeneratingOverlay({ visible, status, message }: GeneratingOverlayProps) {
   const spinAnim = useRef(new Animated.Value(0)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const pulseAnim = useRef(new Animated.Value(0.4)).current;
+  const glowAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (visible) {
       Animated.loop(
         Animated.timing(spinAnim, {
           toValue: 1,
-          duration: 2000,
+          duration: 2500,
           easing: Easing.linear,
           useNativeDriver: true,
         })
@@ -26,19 +27,38 @@ export function GeneratingOverlay({ visible, status, message }: GeneratingOverla
       Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, {
-            toValue: 1.2,
-            duration: 800,
+            toValue: 1,
+            duration: 1200,
+            easing: Easing.inOut(Easing.ease),
             useNativeDriver: true,
           }),
           Animated.timing(pulseAnim, {
+            toValue: 0.4,
+            duration: 1200,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(glowAnim, {
             toValue: 1,
-            duration: 800,
+            duration: 2000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(glowAnim, {
+            toValue: 0,
+            duration: 2000,
+            easing: Easing.inOut(Easing.ease),
             useNativeDriver: true,
           }),
         ])
       ).start();
     }
-  }, [visible, spinAnim, pulseAnim]);
+  }, [visible, spinAnim, pulseAnim, glowAnim]);
 
   if (!visible) return null;
 
@@ -48,23 +68,48 @@ export function GeneratingOverlay({ visible, status, message }: GeneratingOverla
   });
 
   const statusText: Record<string, string> = {
-    starting: 'Iniciando modelo...',
+    starting: 'Inicializando modelo...',
     processing: 'Generando tu sticker...',
-    succeeded: 'Completado!',
+    succeeded: 'Completado',
     failed: 'Error en la generación',
   };
 
   return (
     <View style={styles.overlay}>
+      <Animated.View style={[styles.glowOrb, styles.glowOrb1, { opacity: pulseAnim }]} />
+      <Animated.View style={[styles.glowOrb, styles.glowOrb2, { opacity: glowAnim }]} />
+
       <View style={styles.card}>
-        <Animated.View style={[styles.spinner, { transform: [{ rotate: spin }] }]}>
-          <View style={styles.spinnerInner} />
-        </Animated.View>
-        <Animated.Text style={[styles.emoji, { transform: [{ scale: pulseAnim }] }]}>
-          {status === 'failed' ? '!' : '*'}
-        </Animated.Text>
+        <View style={styles.spinnerContainer}>
+          <Animated.View style={[styles.spinnerOuter, { transform: [{ rotate: spin }] }]} />
+          <Animated.View style={[styles.spinnerInner, { opacity: pulseAnim }]} />
+          <View style={styles.spinnerCenter}>
+            <Text style={styles.spinnerIcon}>
+              {status === 'failed' ? '!' : status === 'succeeded' ? '+' : '*'}
+            </Text>
+          </View>
+        </View>
+
         <Text style={styles.statusText}>{statusText[status] || 'Procesando...'}</Text>
         {message && <Text style={styles.message}>{message}</Text>}
+
+        <View style={styles.dotsRow}>
+          {[0, 1, 2].map(i => (
+            <Animated.View
+              key={i}
+              style={[
+                styles.dot,
+                {
+                  opacity: pulseAnim.interpolate({
+                    inputRange: [0.4, 1],
+                    outputRange: [0.2, i === 1 ? 1 : 0.6],
+                  }),
+                  backgroundColor: i === 1 ? colors.primary : colors.secondary,
+                },
+              ]}
+            />
+          ))}
+        </View>
       </View>
     </View>
   );
@@ -78,52 +123,93 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     zIndex: 100,
   },
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: borderRadius.xl,
-    padding: spacing.xl,
-    alignItems: 'center',
-    minWidth: 250,
-    borderWidth: 1,
-    borderColor: colors.border,
+  glowOrb: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    borderRadius: 100,
   },
-  spinner: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 3,
-    borderColor: colors.border,
+  glowOrb1: {
+    top: '30%',
+    left: '10%',
+    backgroundColor: colors.neonCyan,
+    opacity: 0.06,
+  },
+  glowOrb2: {
+    bottom: '30%',
+    right: '10%',
+    backgroundColor: colors.neonPurple,
+    opacity: 0.06,
+  },
+  card: {
+    ...glassCardStrong,
+    padding: spacing.xl,
+    paddingHorizontal: spacing.xxl,
+    alignItems: 'center',
+    minWidth: 260,
+  },
+  spinnerContainer: {
+    width: 90,
+    height: 90,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.lg,
+  },
+  spinnerOuter: {
+    position: 'absolute',
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    borderWidth: 2,
+    borderColor: 'transparent',
     borderTopColor: colors.primary,
-    marginBottom: spacing.md,
+    borderRightColor: colors.primaryMuted,
   },
   spinnerInner: {
     position: 'absolute',
-    top: 8,
-    left: 8,
-    right: 8,
-    bottom: 8,
-    borderRadius: 32,
-    borderWidth: 3,
-    borderColor: colors.border,
-    borderTopColor: colors.secondary,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    borderBottomColor: colors.secondary,
+    borderLeftColor: colors.secondaryMuted,
   },
-  emoji: {
-    fontSize: 36,
-    position: 'absolute',
-    top: 48,
+  spinnerCenter: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: colors.glass,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  spinnerIcon: {
+    fontSize: 24,
     color: colors.primary,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   statusText: {
     fontSize: fontSize.lg,
     fontWeight: '600',
     color: colors.text,
-    marginTop: spacing.sm,
+    letterSpacing: 0.5,
   },
   message: {
     fontSize: fontSize.sm,
-    color: colors.textSecondary,
+    color: colors.textMuted,
     marginTop: spacing.xs,
     textAlign: 'center',
+  },
+  dotsRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.lg,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
 });

@@ -18,25 +18,44 @@ const MODEL_ICONS: Record<string, string> = {
   'kandinsky': 'brush',
 };
 
+const MODEL_COLORS: Record<string, string> = {
+  'sdxl': colors.neonPink,
+  'flux-schnell': colors.neonCyan,
+  'flux-dev': colors.neonPurple,
+  'playground-v2': colors.neonGreen,
+  'kandinsky': colors.neonBlue,
+};
+
 export function ModelSelector({ models, selectedModel, onSelect }: ModelSelectorProps) {
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.container}>
       {models.map(model => {
         const isSelected = model.id === selectedModel.id;
+        const color = MODEL_COLORS[model.id] || colors.primary;
         return (
           <Pressable
             key={model.id}
-            style={[styles.card, isSelected && styles.selectedCard]}
+            style={[
+              styles.card,
+              isSelected && { borderColor: color + '60', backgroundColor: color + '10' },
+            ]}
             onPress={() => onSelect(model)}
           >
-            <View style={[styles.iconContainer, isSelected && styles.selectedIcon]}>
+            {isSelected && (
+              <View style={[styles.neonBar, { backgroundColor: color }]} />
+            )}
+            <View style={[
+              styles.iconContainer,
+              { backgroundColor: color + '15' },
+              isSelected && { backgroundColor: color + '25', borderColor: color + '40', borderWidth: 1 },
+            ]}>
               <Ionicons
                 name={(MODEL_ICONS[model.id] || 'image') as keyof typeof Ionicons.glyphMap}
-                size={24}
-                color={isSelected ? colors.background : colors.primary}
+                size={22}
+                color={isSelected ? color : colors.textMuted}
               />
             </View>
-            <Text style={[styles.modelName, isSelected && styles.selectedText]} numberOfLines={1}>
+            <Text style={[styles.modelName, isSelected && { color }]} numberOfLines={1}>
               {model.name}
             </Text>
             <Text style={styles.modelDesc} numberOfLines={2}>
@@ -55,42 +74,41 @@ const styles = StyleSheet.create({
     marginVertical: spacing.sm,
   },
   card: {
-    width: 140,
-    backgroundColor: colors.surface,
+    width: 135,
+    backgroundColor: colors.glass,
     borderRadius: borderRadius.md,
     padding: spacing.sm,
     marginRight: spacing.sm,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.border,
+    overflow: 'hidden',
   },
-  selectedCard: {
-    borderColor: colors.primary,
-    backgroundColor: colors.surfaceLight,
+  neonBar: {
+    position: 'absolute',
+    top: 0,
+    left: spacing.md,
+    right: spacing.md,
+    height: 2,
+    borderRadius: 1,
   },
   iconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.card,
+    width: 42,
+    height: 42,
+    borderRadius: borderRadius.sm,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.sm,
-  },
-  selectedIcon: {
-    backgroundColor: colors.primary,
   },
   modelName: {
     fontSize: fontSize.sm,
     fontWeight: '600',
     color: colors.text,
-    marginBottom: 4,
-  },
-  selectedText: {
-    color: colors.primary,
+    marginBottom: 3,
+    letterSpacing: 0.2,
   },
   modelDesc: {
     fontSize: fontSize.xs,
     color: colors.textMuted,
-    lineHeight: 16,
+    lineHeight: 15,
   },
 });
